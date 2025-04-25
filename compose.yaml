@@ -1,0 +1,19 @@
+﻿services:
+  apbd_task07.app:
+    image: apbd_task07.app
+    build:
+      context: .
+      dockerfile: src/APBD_Task07.App/Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+  mssql:
+    image: mcr.microsoft.com/mssql/server
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "L+ratio+diff"
+    volumes:
+      - "./scripts/db:/usr/config"
+    ports:
+      - "1433:1433"
+    entrypoint: "bash /usr/config/entrypoint.sh"

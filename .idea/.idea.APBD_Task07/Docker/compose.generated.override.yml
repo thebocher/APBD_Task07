@@ -1,0 +1,21 @@
+# This is a generated file. Not intended for manual editing.
+services:
+  apbd_task07.app:
+    build:
+      context: "/Users/thebocher/RiderProjects/APBD_Task07"
+      dockerfile: "src/APBD_Task07.App/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net8.0/APBD_Task07.App.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "apbd_task07.app:dev"
+    ports: []
+    volumes:
+    - "/Users/thebocher/RiderProjects/APBD_Task07/src/APBD_Task07.App:/app:rw"
+    - "/Users/thebocher/RiderProjects/APBD_Task07:/src:rw"
+    - "/Users/thebocher/.nuget/packages:/home/app/.nuget/packages"
+    working_dir: "/app"
