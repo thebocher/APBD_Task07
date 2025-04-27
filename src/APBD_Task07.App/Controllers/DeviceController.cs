@@ -33,9 +33,9 @@ public class DeviceController : ControllerBase
     }
 
     [NonAction]
-    private DeviceJsonParser GetDeviceJsonParser(string deviceId)
+    private DeviceJsonParser GetDeviceJsonParser(string deviceType)
     {
-        return _jsonParsers[deviceId.Split("-")[0]];
+        return _jsonParsers[deviceType];
     }
 
     [NonAction]
@@ -43,10 +43,18 @@ public class DeviceController : ControllerBase
     {
         using var reader = new StreamReader(request.Body);
         string rawJson = reader.ReadToEnd();
-        var json = JsonNode.Parse(rawJson); 
-        
+        var json = JsonNode.Parse(rawJson);
+
         if (parser is null)
-            parser = GetDeviceJsonParser((string) json["id"]);
+        {
+            string? deviceType = (string) json["DeviceType"];
+        
+            if (deviceType == null)
+            {
+                throw new ArgumentException("Invalid device type");
+            }
+            parser = GetDeviceJsonParser(deviceType);
+        }
         
         Device? result = parser.Parse(json);
         return result;
@@ -94,14 +102,16 @@ public class DeviceController : ControllerBase
                         return Results.BadRequest("Invalid device body");
                     }
 
+                    device.Id = device.GenerateId();
+
                     _deviceService.AddDevice(device);
+                    return Results.Created("", device);
                 }
                 catch (Exception e)
                 {
                     return Results.BadRequest(e.Message);
                 }
 
-                return Results.Created();
             case "text/plain":
                 var reader = new StreamReader(Request.Body);
                 string body = reader.ReadToEnd();

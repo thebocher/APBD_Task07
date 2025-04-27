@@ -22,7 +22,12 @@ public class PersonalComputer : Device
     {
         return $"{Id},{Name},{TurnedOn},{OperationalSystem}";
     }
-    
+
+    public override string GenerateId()
+    {
+        return "PC-" + RandomString();
+    }
+
     public override void Update(Device device)
     {
         base.Update(device);

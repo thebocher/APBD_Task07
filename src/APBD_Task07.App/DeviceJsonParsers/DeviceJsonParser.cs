@@ -9,7 +9,6 @@ public abstract class DeviceJsonParser
     protected JsonSerializerOptions DeserializeOptions = new()
     {
         PropertyNameCaseInsensitive = true,
-        
     };
     public abstract Device? Parse(JsonNode json);
 }

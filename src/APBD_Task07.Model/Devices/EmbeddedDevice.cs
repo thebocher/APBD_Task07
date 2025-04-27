@@ -46,6 +46,11 @@ public class EmbeddedDevice : Device
         return $"{Id},{Name},{IpAddress},{NetworkName}";
     }
 
+    public override string GenerateId()
+    {
+        return "ED-" + RandomString();
+    }
+
     public override void Update(Device device)
     {
         base.Update(device);

@@ -100,9 +100,7 @@ public class DeviceService(string connectionString) : IDeviceService
     public bool AddDevice(Device device)
     {
         var validator = GetDeviceValidator(device.Id);
-        Console.WriteLine($"validate? {validator.GetType()}");
         validator.Validate(device);
-        Console.WriteLine($"validated {validator.GetType()}");
 
         var tableParser = GetDeviceTableParser(device.Id);
         var devicesSql = "INSERT INTO Device (Id, Name, IsEnabled) VALUES (@id, @name, @turned_on)";

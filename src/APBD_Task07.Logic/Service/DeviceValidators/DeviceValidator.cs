@@ -8,9 +8,6 @@ public abstract class DeviceValidator
 
     public virtual void Validate(Device device)
     {
-        if (device.Id?.GetType() != typeof(string))
-            throw new ArgumentException("Invalid device id");
-        
         if (device.Name.GetType() != typeof(string))
             throw new ArgumentException("Invalid device name");
         

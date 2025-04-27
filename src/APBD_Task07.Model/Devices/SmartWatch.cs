@@ -50,6 +50,11 @@ public class SmartWatch : Device, IPowerNotifier
         return $"{Id},{Name},{TurnedOn},{BatteryPercentage}";
     }
 
+    public override string GenerateId()
+    {
+        return "SW-" + RandomString();
+    }
+
     public override void Update(Device device)
     {
         base.Update(device);
