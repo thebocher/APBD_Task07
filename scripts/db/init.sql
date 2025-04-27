@@ -24,7 +24,7 @@ CREATE TABLE PersonalComputer(
 
 CREATE TABLE Smartwatch(
     Id INT PRIMARY KEY IDENTITY,
-    BatteryPercentage FLOAT NOT NULL,
+    BatteryPercentage INT NOT NULL,
     DeviceId VARCHAR(50)
     CONSTRAINT fk_smartwatch_device FOREIGN KEY (DeviceId) 
         REFERENCES Device(Id) ON DELETE CASCADE 

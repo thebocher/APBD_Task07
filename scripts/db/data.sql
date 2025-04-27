@@ -54,9 +54,9 @@ SET IDENTITY_INSERT PersonalComputer OFF;
 SET IDENTITY_INSERT Smartwatch ON;
 INSERT INTO Smartwatch (Id, DeviceId, BatteryPercentage)
 VALUES
-    (1, 'SW-001', 85.5),
-    (2, 'SW-002', 15.0),  -- Low battery
-    (3, 'SW-003', 72.3),
-    (4, 'SW-004', 92.1),
-    (5, 'SW-005', 5.8);   -- Very low battery
+    (1, 'SW-001', 85),
+    (2, 'SW-002', 15),  -- Low battery
+    (3, 'SW-003', 72),
+    (4, 'SW-004', 92),
+    (5, 'SW-005', 5);   -- Very low battery
 SET IDENTITY_INSERT Smartwatch OFF;

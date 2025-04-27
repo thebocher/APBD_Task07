@@ -15,7 +15,7 @@ public class SmartWatchParser : IParser
         var id = split[0];
         var name = split[1];
         var turnedOn = bool.Parse(split[2]);
-        var batteryPercentage = float.Parse(split[3].Replace("%", ""));
+        var batteryPercentage = int.Parse(split[3].Replace("%", ""));
         
         return new SmartWatch
         {

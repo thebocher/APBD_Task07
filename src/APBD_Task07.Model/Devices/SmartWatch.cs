@@ -4,9 +4,9 @@ using APBD_Task07.Model.Interfaces;
 
 public class SmartWatch : Device, IPowerNotifier
 {
-    private float _batteryPercentage;
+    private int _batteryPercentage;
     
-    public float BatteryPercentage
+    public int BatteryPercentage
     {
         get => _batteryPercentage;
         set

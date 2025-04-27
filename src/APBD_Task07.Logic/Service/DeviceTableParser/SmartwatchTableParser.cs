@@ -23,7 +23,7 @@ public class SmartwatchTableParser : IDeviceTableParser
             Id = (string)reader["DeviceId"],
             Name = (string)reader["Name"],
             TurnedOn = (bool)reader["IsEnabled"],
-            BatteryPercentage = (float)reader["BatteryPercentage"],
+            BatteryPercentage = (int)reader["BatteryPercentage"],
         };
     }
 
