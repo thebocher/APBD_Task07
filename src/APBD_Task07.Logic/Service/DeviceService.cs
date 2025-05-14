@@ -1,100 +1,60 @@
 using APBD_Task07.Logic.DTO;
-using APBD_Task07.Logic.Service.DeviceTableParser;
+using APBD_Task07.Logic.Repositories.interfaces;
 using APBD_Task07.Logic.Service.DeviceValidators;
 using APBD_Task07.Model.Devices;
-using Microsoft.Data.SqlClient;
 
 namespace APBD_Task07.Logic.Service;
 
-public class DeviceService(string connectionString) : IDeviceService
+public class DeviceService : IDeviceService
 {
-    private static readonly List<IDeviceTableParser> _deviceTableParsers = [
-        new EmbeddedDeviceTableParser(), new PersonalComputerTableParser(),
-        new SmartwatchTableParser()
-    ];
-
     private static readonly List<DeviceValidator> _deviceValidators =
     [
         new EmbeddedDeviceValidator(), new PersonalComputerValidator(), new SmartwatchValidator()
     ];
+    
+    private IEmbeddedDeviceRepository _embeddedDeviceRepository;
+    private IPersonalComputerRepository _personalComputerRepository;
+    private IDeviceRepository _deviceRepository;
+    private ISmartwatchRepository _smartwatchRepository;
 
-    private IDeviceTableParser GetDeviceTableParser(string deviceId)
+    public DeviceService(
+        IEmbeddedDeviceRepository embeddedDeviceRepository,
+        IPersonalComputerRepository personalComputerRepository,
+        IDeviceRepository deviceRepository,
+        ISmartwatchRepository smartwatchRepository)
     {
-        return _deviceTableParsers
-            .First(p => p.CanParse(deviceId));
+        _embeddedDeviceRepository = embeddedDeviceRepository;
+        _personalComputerRepository = personalComputerRepository;
+        _deviceRepository = deviceRepository;
+        _smartwatchRepository = smartwatchRepository;
     }
 
-    private DeviceValidator GetDeviceValidator(string deviceId)
+    private IDeviceCrudRepository GetDeviceCrudRepository(string deviceId)
+    {
+        var type = deviceId.Split("-")[0];
+
+        switch (type)
+        {
+            case "SW": return _smartwatchRepository;
+            case "PC": return _personalComputerRepository;
+            case "ED": return _embeddedDeviceRepository;
+            default: throw new Exception("Invalid device type");
+        }
+    }
+
+    private static DeviceValidator GetDeviceValidator(string deviceId)
     {
         return _deviceValidators.First(v => v.CanValidate(deviceId));
     }
 
-    private SqlConnection GetConnection()
-    {
-        return new SqlConnection(connectionString);
-    }
-    
     public List<DeviceDTO> GetDevices()
     {
-        string sql = "SELECT * FROM Device";
-        var devices = new List<DeviceDTO>();
-
-        using (var conn = GetConnection())
-        {
-            SqlCommand command = new SqlCommand(sql, conn);
-            conn.Open();
-            SqlDataReader reader = command.ExecuteReader();
-
-            try
-            {
-                if (reader.HasRows)
-                {
-                    while (reader.Read())
-                    {
-                        var device = new DeviceDTO
-                        {
-                            Id = (string)reader["Id"],
-                            Name = (string)reader["Name"],
-                            TurnedOn = (bool)reader["IsEnabled"],
-                        };
-                        devices.Add(device);
-                    }
-                }
-
-                return devices;
-            }
-            finally
-            {
-                reader.Close();
-            }
-        }
+        return _deviceRepository.GetDevices();
     }
 
     public Device? GetDeviceById(string deviceId)
     {
-        var tableParser = GetDeviceTableParser(deviceId);
-        var sql = $"SELECT * FROM Device {tableParser.GetJoinCommand()} WHERE Device.Id=@id";
-
-        using (var conn = GetConnection())
-        {
-            SqlCommand command = new SqlCommand(sql, conn);
-            command.Parameters.AddWithValue("@id", deviceId);
-            conn.Open();
-            
-            var reader = command.ExecuteReader();
-
-            try
-            {
-                if (!reader.HasRows) return null;
-
-                reader.Read();
-                return tableParser.ParseFromReader(reader);
-            } 
-            finally
-            {
-                reader.Close();
-            }
-        }
+        return GetDeviceCrudRepository(deviceId).GetDevice(deviceId);
     }
 
     public bool AddDevice(Device device)
@@ -102,38 +62,13 @@ public class DeviceService(string connectionString) : IDeviceService
         var validator = GetDeviceValidator(device.Id);
         validator.Validate(device);
 
-        var tableParser = GetDeviceTableParser(device.Id);
-        var devicesSql = "INSERT INTO Device (Id, Name, IsEnabled) VALUES (@id, @name, @turned_on)";
-        
-        using (var conn = GetConnection())
-        {
-            SqlCommand command = new SqlCommand(devicesSql, conn);
-            command.Parameters.AddWithValue("@id", device.Id);
-            command.Parameters.AddWithValue("@name", device.Name);
-            command.Parameters.AddWithValue("@turned_on", device.TurnedOn);
-            conn.Open();
-            
-            var rowsAffected = command.ExecuteNonQuery();
-
-            if (rowsAffected == 0) return false;
-        
-            return tableParser.InsertToOwnTable(device, conn);
-        }
+        GetDeviceCrudRepository(device.Id).AddDevice(device);
+        return true;
     }
 
     public bool DeleteDevice(String deviceId)
     {
-        var sql = "DELETE FROM Device WHERE Device.Id=@id";
-        
-        using (var conn = GetConnection())
-        {
-            SqlCommand command = new SqlCommand(sql, conn);
-            command.Parameters.AddWithValue("@id", deviceId);
-            conn.Open();
-            
-            int rowsAffected = command.ExecuteNonQuery();
-            return rowsAffected > 0;
-        }
+        return GetDeviceCrudRepository(deviceId).DeleteDevice(deviceId);
     }
 
     public bool UpdateDevice(string deviceId, Device device)
@@ -141,25 +76,6 @@ public class DeviceService(string connectionString) : IDeviceService
         var validator = GetDeviceValidator(deviceId);
         validator.Validate(device);
         
-        var tableParser = GetDeviceTableParser(deviceId);
-        var devicesSql = @"UPDATE Device
-                            SET Name = @name, 
-                                IsEnabled = @turned_on
-                            WHERE Device.Id=@id";
-
-        using (var conn = GetConnection())
-        {
-            SqlCommand command = new SqlCommand(devicesSql, conn);
-            command.Parameters.AddWithValue("@id", deviceId);
-            command.Parameters.AddWithValue("@name", device.Name);
-            command.Parameters.AddWithValue("@turned_on", device.TurnedOn);
-            conn.Open();
-            
-            var rowsAffected = command.ExecuteNonQuery();
-
-            if (rowsAffected == 0) return false;
-
-            return tableParser.UpdateInOwnTable(deviceId, device, conn);
-        }
+        return GetDeviceCrudRepository(deviceId).UpdateDevice(deviceId, device);
     }
 }

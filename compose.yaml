@@ -1,12 +1,15 @@
 ﻿services:
   apbd_task07.app:
     image: apbd_task07.app
+    restart: always
     build:
       context: .
       dockerfile: src/APBD_Task07.App/Dockerfile
     ports:
       - "8080:8080"
       - "8081:8081"
+    volumes:
+      - "./:/src"
   mssql:
     image: mcr.microsoft.com/mssql/server
     environment:

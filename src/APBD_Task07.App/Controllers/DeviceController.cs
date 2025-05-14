@@ -78,8 +78,9 @@ public class DeviceController : ControllerBase
             
             return Results.Ok(result);
         }
-        catch
+        catch(Exception ex)
         {
+            Console.WriteLine(ex.Message);
             return Results.NotFound();
         }
     }
@@ -145,7 +146,8 @@ public class DeviceController : ControllerBase
     {
         try
         {
-            var parser = GetDeviceJsonParser(id);
+            var deviceType = id.Split("-")[0];
+            var parser = GetDeviceJsonParser(deviceType);
             Device? device = DeserializeDevice(Request, parser);
 
             if (device == null)
@@ -157,14 +159,12 @@ public class DeviceController : ControllerBase
             {
                 return Results.Ok();
             }
-            else
-            {
-                return Results.NotFound();
-            }
+            
+            return Results.NotFound();
         }
         catch (Exception e)
         {
-            return Results.BadRequest(e.Message);
+            return Results.BadRequest(e.StackTrace + " " + e.Message);
         }
     }
 
